@@ -86,35 +86,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let client = reqwest::Client::new();
     let resp = client.get(project_pipelines_url)
-        .query(&[("per_page", "1")])
+        .query(&[("per_page", "3")])
         .send()?
         .text()?;
 
-    // println!("{}", resp);
-
     let pipelines: Vec<PipelineSummary> = serde_json::from_str(resp.as_str())?;
-    // println!("{:#?}", pipelines);
-    println!("ref\tid\tcreated_at\tstatus");
+    println!("REF\tID\tCREATED AT\tSTATUS");
     for pipeline in pipelines {
         println!("{}\t{}\t{}\t{}", pipeline.ref_, pipeline.id, pipeline.created_at, pipeline.status);
         
-        let pipeline_jobs_url = Url::parse(
-            format!("https://gitlab.com/api/v4/projects/278964/pipelines/{}/jobs", pipeline.id).as_str())?;
+        // let pipeline_jobs_url = Url::parse(
+        //     format!("https://gitlab.com/api/v4/projects/278964/pipelines/{}/jobs", pipeline.id).as_str())?;
         
-        let job_resp = client.get(pipeline_jobs_url)
-            .header("PRIVATE-TOKEN", token)
-            .send()?
-            .text()?;
-        // println!("{}", job_resp);
-        let jobs: Vec<Job> = serde_json::from_str(job_resp.as_str())?;
-        println!("job id\tstage\tname\tstatus");
-        for job in jobs {
-            println!("{}\t{}\t{}\t{}", job.id, job.status, job.stage, job.name);
-        }
-        // println!("{}", job_resp);
-        println!();
+        // let job_resp = client.get(pipeline_jobs_url)
+        //     .header("PRIVATE-TOKEN", token)
+        //     .send()?
+        //     .text()?;
+        // // println!("{}", job_resp);
+        // let jobs: Vec<Job> = serde_json::from_str(job_resp.as_str())?;
+        // println!("job id\tstatus\tstage\tname");
+        // for job in jobs {
+        //     println!("{}\t{}\t{}\t{}", job.id, job.status, job.stage, job.name);
+        // }
+        // // println!("{}", job_resp);
+        // println!();
     }
 
     Ok(())
 }
-
