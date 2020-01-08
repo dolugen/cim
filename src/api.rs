@@ -4,7 +4,7 @@ use std::collections::HashMap;
 // pipelines: GET /projects/:id/pipelines
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PipelineSummary {
-    pub id: i32,
+    pub id: u32,
     pub sha: String,
     #[serde(rename = "ref")]
     pub ref_: String,

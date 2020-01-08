@@ -8,6 +8,7 @@ use std::env;
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
+#[structopt(about = "Keep an eye on your Gitlab pipelines")]
 struct Cli {
     #[structopt(short, long, default_value = "gitlab.com")]
     hostname: String,
@@ -15,6 +16,8 @@ struct Cli {
     project_id: String,
     #[structopt(short = "n", long = "pipelines-count", default_value = "3")]
     pipelines_count: u32,
+    #[structopt(long, help = "Hide jobs summary for pipelines")]
+    hide_jobs: bool,
     #[structopt(short, long)]
     verbose: bool
 }
@@ -43,23 +46,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .text()?;
 
     let pipelines: Vec<PipelineSummary> = serde_json::from_str(resp.as_str())?;
-    println!("REF\tID\tCREATED AT\tSTATUS");
+    println!("ID\tURL\tCREATED AT\tSTATUS\tREF");
     for pipeline in pipelines {
         println!(
-            "{}\t{}\t{}\t{}",
-            pipeline.ref_, pipeline.id, pipeline.created_at, pipeline.status
+            "{}\t{}\t{}\t{}\t{}",
+            pipeline.id, pipeline.web_url, pipeline.created_at, pipeline.status, pipeline.ref_
         );
 
-        let job_url = format!("{}{}/jobs", pipelines_url.as_str(), pipeline.id);
-        let job_resp = client
-            .get(Url::parse(job_url.as_str())?)
-            .header("PRIVATE-TOKEN", token.clone())
-            .send()?
-            .text()?;
+        if !args.hide_jobs {
+            let job_url = format!("{}{}/jobs", pipelines_url.as_str(), pipeline.id);
+            let job_resp = client
+                .get(Url::parse(job_url.as_str())?)
+                .header("PRIVATE-TOKEN", token.clone())
+                .send()?
+                .text()?;
 
-        let jobs: Vec<Job> = serde_json::from_str(job_resp.as_str())?;
-        let jobs_summary = summarize_jobs(jobs);
-        println!("{}", jobs_summary);
+            let jobs: Vec<Job> = serde_json::from_str(job_resp.as_str())?;
+            let jobs_summary = summarize_jobs(jobs);
+            println!("{}", jobs_summary);
+        }
     }
 
     Ok(())
