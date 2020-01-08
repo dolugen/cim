@@ -22,20 +22,20 @@ mod tests {
                 id: 1,
                 name: String::from("Build"),
                 stage: String::from("Build"),
-                status: String::from("success")
+                status: String::from("success"),
             },
             Job {
                 id: 2,
                 name: String::from("Test 1"),
                 stage: String::from("Test"),
-                status: String::from("running")
+                status: String::from("running"),
             },
             Job {
                 id: 3,
                 name: String::from("Test 2"),
                 stage: String::from("Test"),
-                status: String::from("failed")
-            }
+                status: String::from("failed"),
+            },
         ];
         let summary = summarize_jobs(jobs);
         assert_eq!(summary, "1 failed, 1 running, 1 success");
