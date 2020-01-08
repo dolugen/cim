@@ -4,7 +4,6 @@ mod api;
 use api::{summarize_jobs, Job, PipelineSummary};
 
 use reqwest::Url;
-use std::env;
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
@@ -14,6 +13,8 @@ struct Cli {
     hostname: String,
     #[structopt(short = "p", long, default_value = "278964")]
     project_id: String,
+    #[structopt(short, long, env = "GITLAB_PRIVATE_TOKEN", hide_env_values = true)]
+    token: String,
     #[structopt(short = "n", long = "pipelines-count", default_value = "3")]
     pipelines_count: u32,
     #[structopt(long, help = "Hide jobs summary for pipelines")]
@@ -28,15 +29,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("Running in verbose mode. Using host {}", args.hostname);
     }
 
-    let token = env::var("GITLAB_PRIVATE_TOKEN").unwrap();
-
     let api_url = format!("https://{}/api/v4/", args.hostname);
     let pipelines_url = format!("{}projects/{}/pipelines/", api_url, args.project_id);
-
-    assert_eq!(
-        pipelines_url,
-        "https://gitlab.com/api/v4/projects/278964/pipelines/"
-    );
 
     let client = reqwest::Client::new();
     let resp = client
@@ -57,7 +51,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let job_url = format!("{}{}/jobs", pipelines_url.as_str(), pipeline.id);
             let job_resp = client
                 .get(Url::parse(job_url.as_str())?)
-                .header("PRIVATE-TOKEN", token.clone())
+                .header("PRIVATE-TOKEN", args.token.clone())
                 .send()?
                 .text()?;
 
