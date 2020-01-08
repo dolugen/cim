@@ -48,16 +48,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-pub fn add(a: i32, b: i32) -> i32 {
-    a + b
-}
-
 #[cfg(test)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
     use api::{summarize_jobs, Job};
-
 
     #[test]
     fn test_summarize_jobs() {
@@ -85,4 +80,3 @@ mod tests {
         assert_eq!(summary, "1 failed, 1 running, 1 success");
     }
 }
-
