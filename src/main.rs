@@ -5,6 +5,7 @@ use api::{summarize_jobs, Job, PipelineSummary};
 
 use reqwest::Url;
 use structopt::StructOpt;
+use tabular::{Row, Table};
 
 #[derive(Debug, StructOpt)]
 #[structopt(about = "Keep an eye on your Gitlab pipelines")]
@@ -20,7 +21,7 @@ struct Cli {
     #[structopt(long, help = "Hide jobs summary for pipelines")]
     hide_jobs: bool,
     #[structopt(short, long)]
-    verbose: bool
+    verbose: bool,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -40,12 +41,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .text()?;
 
     let pipelines: Vec<PipelineSummary> = serde_json::from_str(resp.as_str())?;
-    println!("ID\tURL\tCREATED AT\tSTATUS\tREF");
+
+    let mut row_format = String::from("{:<}  {:<}  {:<}  {:<}  {:<}");
+    if !args.hide_jobs {
+        row_format.push_str("  {:<}")
+    }
+
+    let mut table = Table::new(row_format.as_str());
+    let mut heading = Row::new()
+            .with_cell("ID")
+            .with_cell("URL")
+            .with_cell("CREATED_AT")
+            .with_cell("STATUS")
+            .with_cell("REF");
+    if !args.hide_jobs {
+        heading.add_cell("JOBS");
+    }
+    table.add_row(heading);
+
     for pipeline in pipelines {
-        println!(
-            "{}\t{}\t{}\t{}\t{}",
-            pipeline.id, pipeline.web_url, pipeline.created_at, pipeline.status, pipeline.ref_
-        );
+        let mut row = Row::new()
+                .with_cell(pipeline.id)
+                .with_cell(pipeline.web_url)
+                .with_cell(pipeline.created_at)
+                .with_cell(pipeline.status)
+                .with_cell(pipeline.ref_);
 
         if !args.hide_jobs {
             let job_url = format!("{}{}/jobs", pipelines_url.as_str(), pipeline.id);
@@ -57,9 +77,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             let jobs: Vec<Job> = serde_json::from_str(job_resp.as_str())?;
             let jobs_summary = summarize_jobs(jobs);
-            println!("{}", jobs_summary);
+            row.add_cell(jobs_summary);
         }
+        table.add_row(row);
     }
+    println!("{}", table);
 
     Ok(())
 }
