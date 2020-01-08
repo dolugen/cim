@@ -3,10 +3,12 @@ extern crate reqwest;
 mod api;
 use api::{Job, PipelineSummary, summarize_jobs};
 
+use std::env;
 use reqwest::Url;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let token = env!("GITLAB_PRIVATE_TOKEN");
+    let token = env::var("GITLAB_PRIVATE_TOKEN").unwrap();
+
     let api_url = "https://gitlab.com/api/v4/";
     let project_id = "278964";
     let pipelines_url = format!("{}projects/{}/pipelines/", api_url, project_id);
@@ -26,7 +28,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         
         let job_url = format!("{}{}/jobs", pipelines_url.as_str(), pipeline.id);
         let job_resp = client.get(Url::parse(job_url.as_str())?)
-            .header("PRIVATE-TOKEN", token)
+            .header("PRIVATE-TOKEN", token.clone())
             .send()?
             .text()?;
 
