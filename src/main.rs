@@ -5,13 +5,30 @@ use api::{summarize_jobs, Job, PipelineSummary};
 
 use reqwest::Url;
 use std::env;
+use structopt::StructOpt;
+
+#[derive(Debug, StructOpt)]
+struct Cli {
+    #[structopt(short, long, default_value = "gitlab.com")]
+    hostname: String,
+    #[structopt(short = "p", long, default_value = "278964")]
+    project_id: String,
+    #[structopt(short = "n", long = "pipelines-count", default_value = "3")]
+    pipelines_count: u32,
+    #[structopt(short, long)]
+    verbose: bool
+}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let args = Cli::from_args();
+    if args.verbose {
+        println!("Running in verbose mode. Using host {}", args.hostname);
+    }
+
     let token = env::var("GITLAB_PRIVATE_TOKEN").unwrap();
 
-    let api_url = "https://gitlab.com/api/v4/";
-    let project_id = "278964";
-    let pipelines_url = format!("{}projects/{}/pipelines/", api_url, project_id);
+    let api_url = format!("https://{}/api/v4/", args.hostname);
+    let pipelines_url = format!("{}projects/{}/pipelines/", api_url, args.project_id);
 
     assert_eq!(
         pipelines_url,
@@ -21,7 +38,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = reqwest::Client::new();
     let resp = client
         .get(Url::parse(pipelines_url.as_str())?)
-        .query(&[("per_page", "3")])
+        .query(&[("per_page", args.pipelines_count)])
         .send()?
         .text()?;
 
