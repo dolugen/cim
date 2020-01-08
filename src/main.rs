@@ -8,7 +8,7 @@ use structopt::StructOpt;
 use tabular::{Row, Table};
 
 #[derive(Debug, StructOpt)]
-#[structopt(about = "Keep an eye on your Gitlab pipelines")]
+#[structopt(about)]
 struct Cli {
     #[structopt(short, long, default_value = "gitlab.com")]
     hostname: String,
