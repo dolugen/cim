@@ -6,7 +6,7 @@ authors = ["Dolugen Buuralda <dolugen@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-reqwest = "0.9.22"
+reqwest = "0.10.1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 structopt = "*"
