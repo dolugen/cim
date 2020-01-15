@@ -14,7 +14,7 @@ struct Cli {
     hostname: String,
     #[structopt(short = "p", long, default_value = "278964")]
     project_id: String,
-    #[structopt(short = "t", long = "token", env, hide_env_values = true)]
+    #[structopt(short = "t", long = "token", help = "Gitlab personal access token. Can also be set as an environment variable called GITLAB_PRIVATE_TOKEN. Get yours from https://gitlab.com/profile/personal_access_tokens", env, hide_env_values = true)]
     gitlab_private_token: String,
     #[structopt(short = "n", long = "pipelines-count", default_value = "3")]
     pipelines_count: u32,
